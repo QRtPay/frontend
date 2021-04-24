@@ -6,7 +6,7 @@ services:
         image: node:lts-alpine
         container_name: site
         command: cd /site/ && npm install && npm start
-        volume:
+        volumes:
             - ./site:/site
         ports:
             - 3000:3000
