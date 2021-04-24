@@ -5,7 +5,7 @@ services:
     site: 
         image: node:lts-alpine
         container_name: site
-        command: ["cd", "/site/", "&&", "npm", "install", "&&", "npm start"]
+        command: sh -c "cd /site && npm install && npm start"
         volumes:
             - ./site:/site
         ports:
