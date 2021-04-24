@@ -1,0 +1,12 @@
+version: '3.6'
+
+services:
+
+    site: 
+        image: node:lts-alpine
+        container_name: site
+        command: cd /site/ && npm install && npm start
+        volume:
+            - ./site:/site
+        ports:
+            - 3000:3000
