@@ -35,33 +35,50 @@ function RegisterDialog(props) {
   const { setStatus, theme, onClose, openTermsDialog, status, classes } = props;
   const [isLoading, setIsLoading] = useState(false);
   const [hasTermsOfServiceError, setHasTermsOfServiceError] = useState(false);
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [ErrorText, setErrorText] = useState("");
   const registerTermsCheckbox = useRef();
-  const registerPassword = useRef();
-  const registerPasswordRepeat = useRef();
+  const userEmail = useRef();
 
   const register = useCallback(() => {
     if (!registerTermsCheckbox.current.checked) {
       setHasTermsOfServiceError(true);
       return;
     }
-    if (
-      registerPassword.current.value !== registerPasswordRepeat.current.value
-    ) {
-      setStatus("passwordsDontMatch");
-      return;
-    }
     setStatus(null);
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
+
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: userEmail.current.value })
+    };
+
+    fetch('https://wizaxxx.ru/back_api/v1/register', requestOptions)
+      .then(async response => {
+        const data = await response.json();
+
+        setTimeout(() => {
+          setIsLoading(false);
+
+          // check for error response
+          if (!response.ok) {
+            setStatus("error");
+            setErrorText(data.error.desc);
+            return;
+          }
+          setStatus("accountCreated");
+
+        }, 1500);
+      })
+      .catch(error => {
+        setStatus("error");
+        setErrorText("Не удалось выполнить запрос");
+      });
   }, [
     setIsLoading,
     setStatus,
     setHasTermsOfServiceError,
-    registerPassword,
-    registerPasswordRepeat,
+    userEmail,
     registerTermsCheckbox,
   ]);
 
@@ -70,7 +87,7 @@ function RegisterDialog(props) {
       loading={isLoading}
       onClose={onClose}
       open
-      headline="Register"
+      headline="Регистрация"
       onFormSubmit={(e) => {
         e.preventDefault();
         register();
@@ -79,13 +96,15 @@ function RegisterDialog(props) {
       hasCloseIcon
       content={
         <Fragment>
-          <TextField
+          {status !== "accountCreated" && (
+            <TextField
             variant="outlined"
             margin="normal"
             required
             fullWidth
             error={status === "invalidEmail"}
-            label="Email Address"
+            label="Email"
+            inputRef={userEmail}
             autoFocus
             autoComplete="off"
             type="email"
@@ -96,69 +115,8 @@ function RegisterDialog(props) {
             }}
             FormHelperTextProps={{ error: true }}
           />
-          <VisibilityPasswordTextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            error={
-              status === "passwordTooShort" || status === "passwordsDontMatch"
-            }
-            label="Password"
-            inputRef={registerPassword}
-            autoComplete="off"
-            onChange={() => {
-              if (
-                status === "passwordTooShort" ||
-                status === "passwordsDontMatch"
-              ) {
-                setStatus(null);
-              }
-            }}
-            helperText={(() => {
-              if (status === "passwordTooShort") {
-                return "Create a password at least 6 characters long.";
-              }
-              if (status === "passwordsDontMatch") {
-                return "Your passwords dont match.";
-              }
-              return null;
-            })()}
-            FormHelperTextProps={{ error: true }}
-            isVisible={isPasswordVisible}
-            onVisibilityChange={setIsPasswordVisible}
-          />
-          <VisibilityPasswordTextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            error={
-              status === "passwordTooShort" || status === "passwordsDontMatch"
-            }
-            label="Repeat Password"
-            inputRef={registerPasswordRepeat}
-            autoComplete="off"
-            onChange={() => {
-              if (
-                status === "passwordTooShort" ||
-                status === "passwordsDontMatch"
-              ) {
-                setStatus(null);
-              }
-            }}
-            helperText={(() => {
-              if (status === "passwordTooShort") {
-                return "Create a password at least 6 characters long.";
-              }
-              if (status === "passwordsDontMatch") {
-                return "Your passwords dont match.";
-              }
-            })()}
-            FormHelperTextProps={{ error: true }}
-            isVisible={isPasswordVisible}
-            onVisibilityChange={setIsPasswordVisible}
-          />
+          )}
+          {status !== "accountCreated" && (
           <FormControlLabel
             style={{ marginRight: 0 }}
             control={
@@ -172,7 +130,7 @@ function RegisterDialog(props) {
             }
             label={
               <Typography variant="body1">
-                I agree to the
+                Я согласен с
                 <span
                   className={classes.link}
                   onClick={isLoading ? null : openTermsDialog}
@@ -189,11 +147,11 @@ function RegisterDialog(props) {
                   }}
                 >
                   {" "}
-                  terms of service
+                  правилами сервиса
                 </span>
               </Typography>
             }
-          />
+          />)}
           {hasTermsOfServiceError && (
             <FormHelperText
               error
@@ -206,19 +164,19 @@ function RegisterDialog(props) {
               service.
             </FormHelperText>
           )}
-          {status === "accountCreated" ? (
+          {status === "accountCreated" && (
             <HighlightedInformation>
-              We have created your account. Please click on the link in the
-              email we have sent to you before logging in.
+              Вам отправлено письмо со ссылкой для завершения регистрации на адрес <b>{userEmail.current.value}</b>.
             </HighlightedInformation>
-          ) : (
+          )}
+          {status === "error" && (
             <HighlightedInformation>
-              Registration is disabled until we go live.
+              {ErrorText}
             </HighlightedInformation>
           )}
         </Fragment>
       }
-      actions={
+      actions={status !== "accountCreated" && (
         <Button
           type="submit"
           fullWidth
@@ -227,10 +185,10 @@ function RegisterDialog(props) {
           color="secondary"
           disabled={isLoading}
         >
-          Register
+          Зарегистрироваться
           {isLoading && <ButtonCircularProgress />}
         </Button>
-      }
+      )}
     />
   );
 }

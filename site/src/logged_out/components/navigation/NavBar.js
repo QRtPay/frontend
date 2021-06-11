@@ -61,12 +61,12 @@ function NavBar(props) {
       icon: <BookIcon className="text-white" />
     },
     {
-      name: "Register",
+      name: "Регистрация",
       onClick: openRegisterDialog,
       icon: <HowToRegIcon className="text-white" />
     },
     {
-      name: "Login",
+      name: "Войти",
       onClick: openLoginDialog,
       icon: <LockOpenIcon className="text-white" />
     }

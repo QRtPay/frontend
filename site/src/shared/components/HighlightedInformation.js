@@ -8,7 +8,8 @@ const styles = theme => ({
     backgroundColor: theme.palette.warning.light,
     border: `${theme.border.borderWidth}px solid ${theme.palette.warning.main}`,
     padding: theme.spacing(2),
-    borderRadius: theme.shape.borderRadius
+    borderRadius: theme.shape.borderRadius,
+    marginBottom: 10
   }
 });
 

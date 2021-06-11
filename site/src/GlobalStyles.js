@@ -9,6 +9,10 @@ const styles = theme => ({
     "*:focus": {
       outline: 0
     },
+    "html, body": {
+      minHeight: '100%',
+      height: '100%'
+    },
     ".text-white": {
       color: theme.palette.common.white
     },
